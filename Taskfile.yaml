@@ -1,0 +1,239 @@
+# https://taskfile.dev
+
+version: "3"
+
+dotenv: ['.env']
+
+vars:
+  GREETING: 👋 Hello, Welcome to FFH Filament Taskfile !
+  DOCKER_COMPOSE: docker compose -f {{.DOCKER_COMPOSE_FILE}}
+
+tasks:
+  default:
+    cmds:
+      - task: help
+
+  build:
+    desc: Build containers
+    cmds:
+      - "{{.DOCKER_COMPOSE}} build"
+
+  composer:
+    aliases: [c]
+    desc: Composer command
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm php composer {{.CLI_ARGS}}"
+
+  composer-install-dev:
+    aliases: [ci]
+    desc: Composer install
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm php composer install"
+
+  composer-install-prod:
+    desc: Composer install --no-dev
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm php composer install --optimize-autoloader --no-suggest --no-dev"
+
+  composer-update:
+    aliases: [cu]
+    desc: Composer update
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm php composer update"
+
+  down:
+    desc: Stop and remove all containers
+    cmds:
+      - "{{.DOCKER_COMPOSE}} down --remove-orphans"
+      - cmd: echo "🛑 Filament is stopped and removed"
+        silent: true
+
+  git-pull:
+    desc: Git pull and reset hard
+    cmds:
+      - git reset --hard
+      - git pull origin
+
+  help:
+    desc: Display this help
+    cmds:
+      - echo "{{.GREETING}}"
+      - task --list
+    silent: true
+
+  larastan:
+    desc: Larastan code analysis
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php ./vendor/bin/phpstan analyse"
+
+  laravel-artisan:
+    aliases: [a, artisan]
+    desc: Laravel Artisan command (If '--' is given, all following parameters are added)
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan {{.CLI_ARGS}}"
+
+  laravel-down:
+    aliases: [ld]
+    desc: Laravel down
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan down"
+
+  laravel-ide-helpers:
+    aliases: [lih]
+    desc: Laravel IDE helpers
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan ide-helper:generate"
+      - "{{.DOCKER_COMPOSE}} exec php php artisan ide-helper:meta"
+      - "{{.DOCKER_COMPOSE}} exec php php artisan ide-helper:models --nowrite"
+
+  laravel-install:
+    desc: Install fresh new Laravel
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm php composer create-project laravel/laravel laravel --prefer-dist"
+      - mv README.md README-docker.md
+      - mv -f ./laravel/* ./laravel/.* ./
+      - rm -rf ./laravel
+
+  laravel-key:
+    desc: Laravel key generate
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm php php artisan key:generate"
+
+  laravel-migrate:
+    aliases: [lm]
+    desc: Laravel migrate
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan migrate"
+
+  laravel-migrate-rollback:
+    aliases: [lmr]
+    desc: Laravel migrate Rollback
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan migrate:rollback"
+
+  laravel-migrate-force:
+    aliases: [lmfc]
+    desc: Laravel migrate --force
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan migrate --force"
+
+  laravel-migrate-fresh:
+    aliases: [lmf]
+    desc: Laravel migrate fresh
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan migrate:fresh"
+
+  laravel-pint:
+    aliases: [pint]
+    desc: Laravel Pint linter (If '--' is given, all following parameters are added)
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php ./vendor/bin/pint {{.CLI_ARGS}}"
+
+  laravel-tinker:
+    aliases: [tinker]
+    desc: Laravel Tinker
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan tinker"
+
+  laravel-storage-link:
+    aliases: [lsl]
+    desc: Laravel storage link
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm php php artisan storage:link"
+
+  laravel-up:
+    aliases: [lu]
+    desc: Laravel up
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan up"
+
+  laravel-test:
+    aliases: [lt, test]
+    desc: Laravel test
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan config:clear"
+      - "{{.DOCKER_COMPOSE}} exec php php artisan test"
+
+  laravel-queue-work:
+    aliases: [lqw]
+    desc: Laravel queue work
+    cmds:
+      - "{{.DOCKER_COMPOSE}} exec php php artisan queue:work"
+
+  logs:
+    desc: Show logs of all containers
+    cmds:
+      - "{{.DOCKER_COMPOSE}} logs"
+
+  npm:
+    desc: NPM command
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm node npm {{.CLI_ARGS}}"
+
+  npm-install:
+    aliases: [ni]
+    desc: NPM install
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm node npm install"
+
+  npm-lint:
+    aliases: [eslint]
+    desc: Eslint code analysis
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm node npm run lint"
+
+  npm-update:
+    aliases: [nu]
+    desc: NPM update
+    cmds:
+      - "{{.DOCKER_COMPOSE}} run --rm node npm update"
+
+  pull:
+    desc: Pull containers
+    cmds:
+      - "{{.DOCKER_COMPOSE}} pull"
+
+  restart:
+    aliases: [r]
+    desc: Restart the projects
+    cmds:
+      - task: down
+      - task: up
+
+  setup:
+    desc: Setup project (composer, npm, migrate, seed)
+    cmds:
+      - cmd: echo "🔧 Installing Filament..."
+        silent: true
+      - cp .env.example .env
+      - task: upgrade
+      - task: composer-install-dev
+      - task: npm-install
+      - task: vite-cert
+      - task: laravel-key
+      - task: laravel-storage-link
+      - task: up
+      - task: laravel-database-initialize
+      - task: laravel-ide-helpers
+      - task: laravel-scout-import
+
+  vite-cert:
+    desc: Generate the Vite certificates
+    cmds:
+      - mkdir -p docker/node
+      - mkcert -cert-file docker/node/localhost.pem -key-file docker/node/localhost-key.pem localhost
+      - cmd: echo "🔐 Vite certificates are generated!"
+        silent: true
+
+  up:
+    desc: Create and start all containers
+    cmds:
+      - "{{.DOCKER_COMPOSE}} up -d"
+      - cmd: echo "✅ Filament is up and running"
+        silent: true
+
+  upgrade:
+    desc: Upgrade containers (pull and build)
+    cmds:
+      - task: pull
+      - task: build

@@ -1,0 +1,26 @@
+services:
+  php:
+    container_name: filament-demo-php
+    build:
+      context: ./docker/php/
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/app/
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.filament-demo-http.rule=Host(`${HOSTNAME}`)
+      - traefik.http.routers.filament-demo-http.entrypoints=websecure
+      - traefik.http.routers.filament-demo-http.tls=true
+  node:
+    container_name: filament-demo-node
+    image: node:18
+    ports:
+      - 5174:5174
+    volumes:
+      - ./:/app/
+    working_dir: /app/
+    command: 'npm run dev'
+networks:
+  default:
+    name: ffh-network
+    external: true
