@@ -7,8 +7,7 @@
 - Clone the repository.
 - Run `task setup`
 
-## End Doc by FFH
-
+## End doc by FFH
 
 A demo application to illustrate how Filament Admin works.
 
