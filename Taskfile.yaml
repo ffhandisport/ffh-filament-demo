@@ -216,10 +216,9 @@ tasks:
       - task: vite-cert
       - task: laravel-key
       - task: laravel-storage-link
-      - task: laravel-migrate-fresh-seed
       - cmd: echo "✅ Setup is done"
         silent: true
-      - cmd: echo "🚨 Edit .env file and run 'task up' to start containers"
+      - cmd: echo "🚨 Edit .env file and run 'task up' to start containers, and 'task laravel-migrate-fresh-seed' if you want to seed the database"
         silent: true
 
 
