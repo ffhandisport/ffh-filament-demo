@@ -21,5 +21,6 @@ yarn-error.log
 # Docker SSL key for Vite dev server
 /docker/node/localhost.pem
 /docker/node/localhost-key.pem
+/docker-compose.yml
 *.sql
 *.sql.gz
